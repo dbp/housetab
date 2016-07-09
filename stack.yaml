@@ -1,0 +1,12 @@
+resolver: lts-6.6
+packages:
+- '.'
+- location:
+    git: https://github.com/positiondev/larceny.git
+    commit: 55890fcb0f05d25e77d0593d94b3e50c6bb8f358
+  extra-dep: true
+
+extra-deps:
+- directory-1.2.6.3
+- logging-3.0.4
+- heroku-0.1.2.3
