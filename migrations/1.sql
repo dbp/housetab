@@ -4,7 +4,8 @@ CREATE TABLE emails (
     id serial PRIMARY KEY,
     account_id integer NOT NULL REFERENCES accounts(id),
     email text NOT NULL,
-    verified_at timestamptz NOT NULL
+    verified_at timestamptz NOT NULL,
+    token text NOT NULL DEFAULT md5(random()::text)
 );
 
 CREATE TABLE authentications (

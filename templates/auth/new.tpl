@@ -1,7 +1,7 @@
 <form method="POST">
-  <label ref="email">
-    Email
-    <input name="email" type="text"/>
+  <label ref="account">
+    Account
+    <input name="account" type="text"/>
   </label>
   <button type="submit"/>
 </form>

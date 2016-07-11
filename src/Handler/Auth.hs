@@ -4,31 +4,53 @@ module Handler.Auth where
 import           Control.Logging
 import           Data.Monoid                ((<>))
 import           Data.Text                  (Text)
+import qualified Data.Text                  as T
 import           Larceny
 import           Network.HTTP.Types.Method
 import           Network.Wai
 import           Web.Fn
 
 import           Context
+import qualified State.Account
 import qualified State.Auth                 as State
 import qualified State.Types.Account        as Account
 import qualified State.Types.Authentication as Authentication
+import qualified State.Types.Email          as Email
 
 root :: Text
 root = "/auth"
 
 handle :: Ctxt -> IO (Maybe Response)
 handle ctxt = route ctxt [path "new" // method GET ==> new
-                         ,path "new" // param "email" // method POST !=> create
+                         ,path "new" // param "account" // param "email" // method POST !=> create
+                         ,path "new" // param "account" // method POST !=> select
                          ,path "use" // param "token" ==> use
                          ,path "destroy" ==> destroy]
 
 new :: Ctxt -> IO (Maybe Response)
 new ctxt = render' ctxt "auth/new"
 
-create :: Ctxt -> Text -> IO (Maybe Response)
-create ctxt email =
-  do a <- State.create ctxt email
+select :: Ctxt -> Text -> IO (Maybe Response)
+select ctxt account =
+  do ems <- State.Account.getEmails ctxt account
+     renderWith' ctxt (subs [("account", text account), ("emails", mapSubs (\e -> subs [("id", text (tshow (Email.id e))),("email", text $ obfuscate (Email.email e))]) ems)]) "auth/select"
+  where obfuscate e = let [b,a] = T.splitOn "@" e
+                          blen = T.length b
+                          btk = if blen > 3
+                                   then 3
+                                   else 2
+                          newb = T.take btk b <> T.replicate (blen - btk) "*"
+                          alen = T.length a
+                          atk = if alen > 3
+                                   then 3
+                                   else 2
+                          newa = T.replicate atk "*" <> T.drop atk a
+                      in newb <> "@" <> newa
+
+
+create :: Ctxt -> Text -> Int -> IO (Maybe Response)
+create ctxt account email_id =
+  do a <- State.create ctxt account email_id
      case a of
        Nothing  -> redirect $ root <> "/new"
        Just a' ->
