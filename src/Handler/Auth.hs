@@ -5,12 +5,12 @@ import           Control.Logging
 import           Data.Monoid                ((<>))
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
-import           Larceny
 import           Network.HTTP.Types.Method
 import           Network.Wai
 import           Web.Fn
+import           Web.Larceny
 
-import           Context
+import           Base
 import qualified State.Account
 import qualified State.Auth                 as State
 import qualified State.Types.Account        as Account
@@ -33,7 +33,10 @@ new ctxt = render' ctxt "auth/new"
 select :: Ctxt -> Text -> IO (Maybe Response)
 select ctxt account =
   do ems <- State.Account.getEmails ctxt account
-     renderWith' ctxt (subs [("account", text account), ("emails", mapSubs (\e -> subs [("id", text (tshow (Email.id e))),("email", text $ obfuscate (Email.email e))]) ems)]) "auth/select"
+     renderWith' ctxt (subs [("account", textFill account)
+                            ,("emails", mapSubs (\e -> subs [("id", textFill (tshow (Email.id e)))
+                                                            ,("email", textFill $ obfuscate (Email.email e))]) ems)])
+                      "auth/select"
   where obfuscate e = let [b,a] = T.splitOn "@" e
                           blen = T.length b
                           btk = if blen > 3

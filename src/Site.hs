@@ -14,23 +14,24 @@ import qualified Data.Vault.Lazy                   as Vault
 import           Database.PostgreSQL.Simple        (ConnectInfo (..),
                                                     Connection, close,
                                                     connectPostgreSQL)
-import           Larceny
 import           Network.Wai                       (Application, Request,
                                                     Response)
 import           Network.Wai.Session               (withSession)
 import           Network.Wai.Session.ClientSession (clientsessionStore)
 import           System.Directory                  (doesFileExist)
 import           System.Environment                (lookupEnv)
-import           Web.ClientSession                 (randomKey)
+import           Web.ClientSession                 (initKey, randomKey)
 import           Web.Cookie                        (setCookiePath)
 import           Web.Fn
 import           Web.Heroku                        (parseDatabaseUrl)
+import           Web.Larceny
 
 
-import           Context
+import           Base
 
 import           Handler.Auth
 import           Handler.Home
+import qualified State.Cache                       as Cache
 
 initializer :: IO Ctxt
 initializer = do
@@ -45,14 +46,23 @@ initializer = do
                      u
   pgpool <- createPool (connectPostgreSQL $ T.encodeUtf8 $ T.intercalate " " $ map (\(k,v) -> k <> "=" <> v) ps)
                         close 1 60 20
-  lib <- loadTemplates "templates"
+  lib <- loadTemplates "templates" defaultOverrides
   session <- Vault.newKey
   return (Ctxt defaultFnRequest pgpool lib session)
 
 app :: IO Application
-app = do (_, k) <- randomKey
+app = do ctxt <- initializer
+         mbs <- Cache.get' ctxt "session-key"
+         let newkey = do (bs, k) <- randomKey
+                         Cache.set' ctxt "session-key" bs
+                         return k
+         k <- case mbs of
+                Nothing -> newkey
+                Just bs ->
+                  case initKey bs of
+                    Right k -> return k
+                    Left _ -> newkey
          let store = clientsessionStore k
-         ctxt <- initializer
          return (withSession store "_session" def {setCookiePath = Just "/"} (sess ctxt) (toWAI ctxt site))
 
 site :: Ctxt -> IO Response

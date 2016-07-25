@@ -2,22 +2,25 @@
 module Context where
 
 import           Control.Monad              (join)
+import           Control.Monad.Trans        (liftIO)
+import qualified Data.Map                   as M
 import           Data.Monoid                ((<>))
 import           Data.Pool                  (Pool)
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import qualified Data.Vault.Lazy            as Vault
 import           Database.PostgreSQL.Simple (Connection)
-import           Larceny                    (Library, Substitutions, render,
-                                             renderWith)
 import           Network.Wai                (Request (..), Response)
 import           Network.Wai.Session        (Session)
 import           Web.Fn
+import qualified Web.Larceny                (Library, Substitutions)
 
+type Library = Web.Larceny.Library ()
+type Substitutions = Web.Larceny.Substitutions ()
 
 data Ctxt = Ctxt { request :: FnRequest
                  , db      :: Pool Connection
-                 , library :: Library ()
+                 , library :: Library
                  , sess    :: Vault.Key (Session IO Text (Maybe Text))
                  }
 
@@ -25,15 +28,6 @@ instance RequestContext Ctxt where
   getRequest (Ctxt r _ _ _) = r
   setRequest (Ctxt _ p l s) r = Ctxt r p l s
 
-render' :: Ctxt -> Text -> IO (Maybe Response)
-render' ctxt = renderWith' ctxt mempty
-
-renderWith' :: Ctxt -> Substitutions () -> Text -> IO (Maybe Response)
-renderWith' ctxt subs tpl =
-  do t <- renderWith (library ctxt) subs () (T.splitOn "/" tpl)
-     case t of
-       Nothing -> return Nothing
-       Just t' -> okHtml t'
 
 tshow :: Show a => a -> Text
 tshow = T.pack . show
