@@ -23,6 +23,12 @@ executable housetab
                        State.Types.Account
                        State.Types.Authentication
                        State.Types.Email
+                       Base
+                       State.Cache
+                       State.Entry
+                       State.Person
+                       State.Types.Entry
+                       State.Types.Person
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , fn

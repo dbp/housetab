@@ -1,6 +1,7 @@
 resolver: lts-6.6
 packages:
 - '.'
+- 'convert'
 - location:
     git: https://github.com/positiondev/larceny.git
     commit: 72de344930d5d71e0a3f12f12fdc1bb80fe896cb

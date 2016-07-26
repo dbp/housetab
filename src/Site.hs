@@ -66,6 +66,11 @@ app = do ctxt <- initializer
          return (withSession store "_session" def {setCookiePath = Just "/"} (sess ctxt) (toWAI ctxt site))
 
 site :: Ctxt -> IO Response
-site ctxt = route ctxt [path "auth" ==> Handler.Auth.handle
-                       ,end ==> Handler.Home.handle]
-                  `fallthrough` notFoundText "Page Not Found"
+site ctxt =
+     route ctxt [path "auth" ==> Handler.Auth.handle
+                ,end ==> Handler.Home.handle
+                ,path "static" ==> staticServe "static"]
+                `fallthrough` do r <- render' ctxt "404"
+                                 case r of
+                                   Just r' -> return r'
+                                   Nothing -> notFoundText "Page not found"

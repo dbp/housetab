@@ -9,7 +9,7 @@
         </emails>
       </select>
     </label>
-    <button type="submit"/>
+    <button type="submit">Submit</button>
   </form>
 
 </apply>
