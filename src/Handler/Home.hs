@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TupleSections     #-}
 module Handler.Home where
 
 import           Control.Logging
@@ -11,16 +12,20 @@ import           Data.Time.Format
 import           Network.HTTP.Types.Method
 import           Network.Wai
 import           Web.Fn
-import           Web.Larceny               (mapSubs, subs, textFill)
+import           Web.Larceny               (fillChildrenWith, mapSubs, subs,
+                                            textFill)
 
 import           Base
+import qualified Lib
 
 import qualified State.Account
 import qualified State.Entry
 import qualified State.Person
+import qualified State.Share
 import qualified State.Types.Account       as Account
 import qualified State.Types.Entry         as Entry
 import qualified State.Types.Person        as Person
+import qualified State.Types.Share         as Share
 
 root :: Text
 root = "/"
@@ -34,8 +39,24 @@ handle ctxt =
          Just acnt_id ->
            do es <- State.Entry.getForAccount ctxt acnt_id
               ps <- State.Person.getForAccount ctxt acnt_id
-              return $ subs [("entries", mapSubs (entrySubs ps) es)]
+              ps_ws <- mapM (\p -> (p, ) <$> State.Share.getForPerson ctxt (Person.id p)) ps
+              let (Lib.Result people today) =
+                    Lib.run ps_ws es
+              return $ subs [("entries", mapSubs (entrySubs ps) es)
+                            ,("results", mapSubs resultSubs people)]
      renderWith' ctxt s "index"
+
+moneyShow :: Double -> Text
+moneyShow d =
+  let dollars' = floor d :: Int
+      dollars = if dollars' > 0
+                   then "$" <> tshow dollars'
+                   else "-$" <> tshow (-dollars')
+      cents' = floor $ 100 * (d - fromIntegral dollars')
+      cents = if cents' < 10
+                 then "0" <> tshow cents'
+                 else tshow cents'
+  in dollars <> "." <> cents
 
 entrySubs :: [Person.Person] -> Entry.Entry -> Substitutions
 entrySubs ps (Entry.Entry i a w desc dt hm wps) =
@@ -48,7 +69,7 @@ entrySubs ps (Entry.Entry i a w desc dt hm wps) =
                                defaultTimeLocale
                                "%Y-%m-%d"
                                dt))
-       ,("howmuch", textFill (tshow hm))
+       ,("howmuch", textFill (moneyShow hm))
        ,("whopays", mapSubs (\(isl, pi) -> subs [("id", textFill (tshow pi))
                                                 ,("name", textFill (Person.name (getP pi)))
                                                 ,("sep", textFill $ if isl
@@ -56,3 +77,14 @@ entrySubs ps (Entry.Entry i a w desc dt hm wps) =
                                                                        else ",")])
                               (zip (replicate (length wps - 1) False ++ repeat True) wps))]
   where getP i = fromJust $ lookup i (map (\p -> (Person.id p, p)) ps)
+
+personSubs :: Person.Person -> Substitutions
+personSubs p = subs [("id", textFill $ tshow $ Person.id p)
+                    ,("name", textFill $ Person.name p)]
+
+resultSubs :: (Person.Person, Lib.Spent, Lib.Owes)
+           -> Substitutions
+resultSubs (p, s, o) =
+      subs [("person", fillChildrenWith (personSubs p))
+           ,("spent", textFill (moneyShow s))
+           ,("owes", textFill (moneyShow o))]

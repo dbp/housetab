@@ -29,6 +29,10 @@ executable housetab
                        State.Person
                        State.Types.Entry
                        State.Types.Person
+                       Handler.Entry
+                       Lib
+                       State.Share
+                       State.Types.Share
   ghc-options:         -threaded -rtsopts -with-rtsopts=-N
   build-depends:       base
                      , fn

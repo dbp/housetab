@@ -1,6 +1,33 @@
 <apply template="base">
 
   <isLoggedIn>
+    <table class="results">
+      <tr>
+        <th>
+          Person
+        </th>
+        <th>
+          Spent
+        </th>
+        <th>
+          Owes
+        </th>
+      </tr>
+      <results>
+        <tr>
+          <td>
+            <person><name/></person>
+          </td>
+          <td>
+            <spent/>
+          </td>
+          <td>
+            <owes/>
+          </td>
+        </tr>
+      </results>
+    </table>
+
     <table class="entries">
       <tr>
         <th></th>
@@ -16,7 +43,7 @@
             <a href="/entries/${id}/edit">edit</a> &ndash;
             <a href="/entries/${id}/delete" onclick="return confirm('are you sure?')">delete</a>
           <td>
-            <date/>
+            <span style="white-space: nowrap"><date/></span>
           </td>
           <td>
             <description/>
