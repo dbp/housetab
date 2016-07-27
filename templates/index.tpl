@@ -14,7 +14,7 @@
         <tr>
           <td>
             <a href="/entries/${id}/edit">edit</a> &ndash;
-            <a href="/entries/${id}/delete">delete</a>
+            <a href="/entries/${id}/delete" onclick="return confirm('are you sure?')">delete</a>
           <td>
             <date/>
           </td>

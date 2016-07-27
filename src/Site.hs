@@ -30,6 +30,7 @@ import           Web.Larceny
 import           Base
 
 import           Handler.Auth
+import           Handler.Entry
 import           Handler.Home
 import qualified State.Cache                       as Cache
 
@@ -68,6 +69,7 @@ app = do ctxt <- initializer
 site :: Ctxt -> IO Response
 site ctxt =
      route ctxt [path "auth" ==> Handler.Auth.handle
+                ,path "entries" ==> Handler.Entry.handle
                 ,end ==> Handler.Home.handle
                 ,path "static" ==> staticServe "static"]
                 `fallthrough` do r <- render' ctxt "404"
