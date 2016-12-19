@@ -13,8 +13,9 @@ import           Database.PostgreSQL.Simple (Connection)
 import           Network.Wai                (Request (..), Response)
 import           Network.Wai.Session        (Session)
 import           Web.Fn
-import qualified Web.Larceny                (Library, Substitutions)
+import qualified Web.Larceny                (Library, Substitutions, Fill)
 
+type Fill = Web.Larceny.Fill ()
 type Library = Web.Larceny.Library ()
 type Substitutions = Web.Larceny.Substitutions ()
 

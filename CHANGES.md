@@ -24,7 +24,7 @@ the account name and then select one of the email addresses associated
 and we'll send you a link that when you click will log you in. The
 logins should last for a while (weeks at least), and there won't be
 any more passwords. Since we previously supported only a single
-password, you'll have to start out just logging in with that, and then
+email, you'll have to start out just logging in with that, and then
 once you are logged in you can add more email addresses.
 
 3. Data export. One of the features that we wanted to add to the

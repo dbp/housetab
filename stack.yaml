@@ -1,14 +1,20 @@
-resolver: lts-6.6
+resolver: lts-7.14
 packages:
 - '.'
+- '../larceny'
+# - location:
+#     git: https://github.com/positiondev/larceny.git
+#     commit: 580ef43758efd79f8aec31375a8d89a3f403ed6e
+#   extra-dep: true
 - location:
-    git: https://github.com/positiondev/larceny.git
-    commit: 580ef43758efd79f8aec31375a8d89a3f403ed6e
-  extra-dep: true
+      git: https://github.com/positiondev/fn.git
+      commit: 5898878bff740665986bb49c4bdc48c11646c3b1
+  subdirs:
+    - fn
 
 extra-deps:
-- directory-1.2.6.3
 - logging-3.0.4
 - heroku-0.1.2.3
 - wai-session-clientsession-0.1
 - cereal-text-0.1.0.2
+- digestive-functors-0.8.1.1
