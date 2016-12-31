@@ -20,6 +20,18 @@
       Who
       <dfInputSelect ref="who"/>
     </dfLabel>
+
+    <dfLabel ref="whopays">
+      Whopays
+      <dfList ref="whopays">
+        <dfLabel ref="present">
+          <dfInputCheckbox ref="present"/>
+          <dfPlainText ref="name" />
+        </dfLabel>
+      </dfList>
+    </dfLabel>
+
+
     <dfInputSubmit/>
   </dfForm>
 </apply>

@@ -20,7 +20,8 @@ import           Context
 
 formFills :: View Text -> Substitutions
 formFills view = Web.Larceny.subs $
-                 [("dfInput", dfInput view)
+                 [("dfPlainText", dfPlainText view)
+                 ,("dfInput", dfInput view)
                  ,("dfInputText", dfInputText view)
                  ,("dfInputTextArea", dfInputTextArea view)
                  ,("dfInputPassword", dfInputPassword view)
@@ -35,6 +36,7 @@ formFills view = Web.Larceny.subs $
                  ,("dfForm", dfForm view)
                  ,("dfErrorList", dfErrorList view)
                  ,("dfChildErrorList", dfChildErrorList view)
+                 ,("dfList", dfList view)
                  ,("dfSubView", dfSubView view)
                  ,("dfIfChildErrors", dfIfChildErrors view)]
 
@@ -206,6 +208,14 @@ dfInputCheckbox view =
                    return $ lucidText $
                      input_ allAttrs)
 
+dfPlainText :: View Text -> Fill
+dfPlainText view =
+  Web.Larceny.useAttrs
+    (a"ref") (\ref -> Web.Larceny.Fill $ \attrs (pth, tpl) lib ->
+                do let ref' = absoluteRef ref view
+                       value = fieldInputText ref view
+                   return value)
+
 dfInputFile :: View Text -> Fill
 dfInputFile view =
   Web.Larceny.useAttrs
@@ -227,34 +237,6 @@ dfInputSubmit _ =
    let allAttrs = M.fromList [("type", "submit")]  `M.union` attrs
    return $ lucidText $ input_  (attrsToLucid allAttrs)
 
-{- Not yet needed
-dfInputList :: View Text -> Fill
-dfInputList view =
-  Web.Larceny.useAttrs
-    ((a"ref") (\ref -> Web.Larceny.Fill $ \attrs (pth, tpl) lib -> do
-                let listRef = absoluteRef ref view
-                    listAttrs = [("id", listRef)
-                                ,("class", "inputList")]
-                    addControl _ = return $ disableOnclick ref view
-                      [("onclick", T.concat ["addInputListItem(this, '"
-                                            ,listRef
-                                            ,"'); return false;"])]
-                    removeControl _ = return $ disableOnclick ref view
-                      [("onclick", T.concat ["removeInputListItem(this, '"
-                                            ,listRef
-                                            ,"'); return false;"])]
-                    itemAttrs v _ = return
-                      [("id", listRef <> "." <> (last $ "0": viewContext v))
-                      ,("class", listRef <> ".inputListItem")]
-                    templateAttrs v _ = return
-                      [("id", listRef <> "." <> (last $ "-1" : viewContext v))
-                      ,("class", listRef <> ".inputListTempate")
-                      ,("style", "display: none;")]
-                    items = listSubViews ref view
-                    f attrs v = Web.Larceny.fillChildrenWith
-                                (formFills v) -- and other fills
-                undefined))
--}
 
 dfLabel :: View Text -> Fill
 dfLabel view =
@@ -315,10 +297,17 @@ dfIfChildErrors view =
 
 --- ???????
 dfSubView :: View Text -> Fill
-dfSubView view = do
+dfSubView view =
   Web.Larceny.useAttrs
     (a"ref") (\ref -> let view' = subView ref view in
                      Web.Larceny.fillChildrenWith (formFills view'))
+
+dfList :: View Text -> Fill
+dfList view =
+  Web.Larceny.useAttrs
+    (a"ref") (\ref -> let views = listSubViews ref view in
+                      Web.Larceny.mapSubs (\view' -> formFills view') views)
+
 
 setDisabled :: Text -> View v -> [(Text, Text)] -> [(Text, Text)]
 setDisabled ref view = if viewDisabled ref view then (("disabled",""):) else id

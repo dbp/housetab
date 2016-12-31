@@ -43,6 +43,17 @@ delH ctxt i =
           Just aid -> State.Entry.delete ctxt aid i
         redirect root
 
+
+checkboxForm :: Monad m => Maybe (Int, Text, Bool) -> Form Text m (Int, Text, Bool)
+checkboxForm e = ( , , )
+        <$> "id" .: stringRead "Internal error." (fst3 <$> e)
+        <*> "name" .: text (snd3 <$> e)
+        <*> "present" .: bool (trd3 <$> e)
+
+fst3 (a,_,_) = a
+snd3 (_,a,_) = a
+trd3 (_,_,a) = a
+
 entryForm :: [Person] -> Maybe Entry -> Form Text IO Entry
 entryForm people me =
   Entry.Entry
@@ -52,7 +63,15 @@ entryForm people me =
   <*> "description" .: text (Entry.description <$> me)
   <*> "date" .: ((\d -> UTCTime d 0) <$> dateFormlet "%F" (utctDay <$> (Entry.date <$> me)))
   <*> "howmuch" .: stringRead "Number, like 5.05" (Entry.howmuch <$> me)
-  <*> pure (fromMaybe [] (Entry.whopaysIds <$> me))
+  <*> "whopays" .: ((map fst3 . filter trd3) <$>
+                    listOf
+                      (\mp -> checkboxForm (maybe Nothing (\p ->
+                                                             Just ( Person.id p
+                                                                  , Person.name p
+                                                                  , Person.id p `elem` (fromMaybe [] (Entry.whopaysIds <$> me)))) mp))
+                      (Just people))
+
+  -- ((map fst . filter snd) <$> (sequenceA (map (\p -> ) people)))
 
 editH :: Ctxt -> Int -> IO (Maybe Response)
 editH ctxt i =
