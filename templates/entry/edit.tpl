@@ -1,37 +1,79 @@
 <apply template="base">
   <dfForm>
-    <dfChildErrorList ref=""/>
-    <dfLabel ref="date">
-      Date
-      <dfInput ref="date"/>
-    </dfLabel>
+    <table>
+      <tr>
+        <td colspan="2">
+          <dfChildErrorList ref=""/>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <dfLabel ref="date">
+            Date
+          </dfLabel>
+        </td>
+        <td>
+          <dfInput ref="date"/>
+        </td>
+      </tr>
 
-    <dfLabel ref="description">
-      Description
-      <dfInput ref="description"/>
-    </dfLabel>
+      <tr>
+        <td>
+          <dfLabel ref="description">
+            Description
+          </dfLabel>
+        </td>
+        <td>
+          <dfInput ref="description"/>
+        </td>
+      </tr>
 
-    <dfLabel ref="howmuch">
-      How Much
-      <dfInput ref="howmuch"/>
-    </dfLabel>
+      <tr>
+        <td>
+          <dfLabel ref="howmuch">
+            How Much
+          </dfLabel>
+        </td>
+        <td>
+          <dfInput ref="howmuch"/>
+        </td>
+      </tr>
 
-    <dfLabel ref="who">
-      Who
-      <dfInputSelect ref="who"/>
-    </dfLabel>
+      <tr>
+        <td>
+          <dfLabel ref="who">
+            Who
+          </dfLabel>
+        </td>
+        <td>
+          <dfInputSelect ref="who"/>
+        </td>
+      </tr>
 
-    <dfLabel ref="whopays">
-      Whopays
-      <dfList ref="whopays">
-        <dfLabel ref="present">
-          <dfInputCheckbox ref="present"/>
-          <dfPlainText ref="name" />
-        </dfLabel>
-      </dfList>
-    </dfLabel>
-
-
-    <dfInputSubmit/>
+      <tr>
+        <td>
+          <dfLabel ref="whopays">
+            Who Pays
+          </dfLabel>
+        </td>
+        <td>
+          <dfList ref="whopays">
+            <dfLabel ref="present">
+              <dfInputCheckbox ref="present"/>
+              <dfPlainText ref="name" />
+            </dfLabel>
+            <br/>
+          </dfList>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <a href="/">Cancel</a>
+        </td>
+        <td>
+          <dfInputSubmit/>
+        </td>
+      </tr>
+    </table>
   </dfForm>
 </apply>

@@ -7,8 +7,9 @@
 
   <body>
     <ul class="nav">
-      <li><a href="/">HouseTab</a></li>
       <isLoggedIn>
+        <li><a href="/entries/add">Add Entry</a></li>
+        <li><a href="/">Home</a></li>
         <li><loggedInAccount/> &mdash; <a href="/auth/destroy">Logout</a></li>
       </isLoggedIn>
       <notLoggedIn>

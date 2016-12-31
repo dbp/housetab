@@ -14,6 +14,9 @@ import           State.Types.Email
 import           State.Types.Entry
 
 
+create :: Ctxt -> Int -> Entry -> IO ()
+create ctxt account_id entry = withResource (Context.db ctxt) $ \c -> void $ execute c "INSERT INTO entries (account_id, who, what, date, howmuch, whopays, category) VALUES (?,?,?,?,?,?, '')" (account_id, whoId entry, description entry, date entry, howmuch entry, PGArray $ whopaysIds entry)
+
 delete :: Ctxt -> Int -> Int -> IO ()
 delete ctxt account_id entry_id = withResource (Context.db ctxt) $ \c -> void $ execute c "DELETE FROM entries WHERE id = ? AND account_id = ?" (entry_id, account_id)
 

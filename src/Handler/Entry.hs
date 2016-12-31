@@ -32,8 +32,23 @@ root = "/"
 
 handle :: Ctxt -> IO (Maybe Response)
 handle ctxt =
-  route ctxt [segment // path "delete" ==> delH
+  route ctxt [path "add" ==> addH
+             ,segment // path "delete" ==> delH
              ,segment // path "edit" ==> editH]
+
+addH :: Ctxt -> IO (Maybe Response)
+addH ctxt =
+     do mac <- currentAccountId ctxt
+        case mac of
+          Nothing -> redirect root
+          Just aid ->
+            do people <- State.Person.getForAccount ctxt aid
+               runForm ctxt "add" (entryForm people Nothing) $ \r ->
+                 case r of
+                   (v, Nothing) -> renderWith' ctxt (formFills v) "entry/edit"
+                   (_, Just entry') -> do State.Entry.create ctxt aid entry'
+                                          redirect root
+
 
 delH :: Ctxt -> Int -> IO (Maybe Response)
 delH ctxt i =
@@ -70,8 +85,6 @@ entryForm people me =
                                                                   , Person.name p
                                                                   , Person.id p `elem` (fromMaybe [] (Entry.whopaysIds <$> me)))) mp))
                       (Just people))
-
-  -- ((map fst . filter snd) <$> (sequenceA (map (\p -> ) people)))
 
 editH :: Ctxt -> Int -> IO (Maybe Response)
 editH ctxt i =
