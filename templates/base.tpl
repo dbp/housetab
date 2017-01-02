@@ -10,6 +10,7 @@
       <isLoggedIn>
         <li><a href="/entries/add">Add Entry</a></li>
         <li><a href="/">Home</a></li>
+        <li><a href="/sets">Import/Export</a></li>
         <li><loggedInAccount/> &mdash; <a href="/auth/destroy">Logout</a></li>
       </isLoggedIn>
       <notLoggedIn>

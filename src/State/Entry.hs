@@ -2,12 +2,12 @@
 
 module State.Entry where
 
-import           Control.Monad              (void)
+import           Control.Monad                    (void)
 import           Data.Maybe
 import           Data.Pool
-import           Data.Text                  (Text)
+import           Data.Text                        (Text)
 import           Database.PostgreSQL.Simple
-import           Database.PostgreSQL.Simple.Types (PGArray(..))
+import           Database.PostgreSQL.Simple.Types (PGArray (..))
 
 import           Context
 import           State.Types.Email
@@ -28,4 +28,4 @@ update ctxt account_id entry = withResource (Context.db ctxt) $ \c -> void $ exe
 
 getForAccount :: Ctxt -> Int -> IO [Entry]
 getForAccount ctxt account_id =
-  withResource (Context.db ctxt) $ \c -> query c "SELECT id, account_id, who, what, date, howmuch, whopays FROM entries WHERE account_id = ? ORDER BY date DESC" (Only account_id)
+  withResource (Context.db ctxt) $ \c -> query c "SELECT id, account_id, who, what, date, howmuch, whopays FROM entries WHERE account_id = ? AND archived IS NULL ORDER BY date DESC" (Only account_id)

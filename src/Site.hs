@@ -32,6 +32,7 @@ import           Base
 import           Handler.Auth
 import           Handler.Entry
 import           Handler.Home
+import           Handler.Set
 import qualified State.Cache                       as Cache
 
 initializer :: IO Ctxt
@@ -62,7 +63,7 @@ app = do ctxt <- initializer
                 Just bs ->
                   case initKey bs of
                     Right k -> return k
-                    Left _ -> newkey
+                    Left _  -> newkey
          let store = clientsessionStore k
          return (withSession store "_session" def {setCookiePath = Just "/"} (sess ctxt) (toWAI ctxt site))
 
@@ -70,6 +71,7 @@ site :: Ctxt -> IO Response
 site ctxt =
      route ctxt [path "auth" ==> Handler.Auth.handle
                 ,path "entries" ==> Handler.Entry.handle
+                ,path "sets" ==> Handler.Set.handle
                 ,end ==> Handler.Home.handle
                 ,path "static" ==> staticServe "static"]
                 `fallthrough` do r <- render' ctxt "404"

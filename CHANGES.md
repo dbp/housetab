@@ -1,3 +1,11 @@
+## Export/Import
+
+- All entries get archived flag
+- New table of `sets`, with date, type (import, export)
+- New join table `entry_sets` connecting `sets` to `entries`
+- Exports / imports create sets / entries.
+- Archiving / unarchiving can be done to any.
+
 ## Housetab - revamp
 
 The current version of Housetab was created in mid-2011, and since

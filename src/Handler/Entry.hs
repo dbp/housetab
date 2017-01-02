@@ -7,25 +7,26 @@ import           Data.Maybe                (fromJust, fromMaybe)
 import           Data.Monoid               ((<>))
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
+import           Data.Time.Calendar
+import           Data.Time.Clock
 import           Data.Time.Format
 import           Network.HTTP.Types.Method
 import           Network.Wai
+import           Text.Digestive.Form
+import           Text.Digestive.Larceny
 import           Web.Fn
+import           Web.Fn.Extra.Digestive
 import           Web.Larceny               (mapSubs, subs, textFill)
-import Web.Fn.Extra.Digestive
-import Text.Digestive.Larceny
-import Text.Digestive.Form
-import Data.Time.Clock
-import Data.Time.Calendar
 
 import           Base
 
 import qualified State.Entry
 import qualified State.Person
+import           State.Types.Entry         (Entry)
 import qualified State.Types.Entry         as Entry
-import  State.Types.Entry         (Entry)
-import qualified State.Types.Person         as Person
-import State.Types.Person (Person)
+import           State.Types.Person        (Person)
+import qualified State.Types.Person        as Person
+
 
 root :: Text
 root = "/"
@@ -54,7 +55,7 @@ delH :: Ctxt -> Int -> IO (Maybe Response)
 delH ctxt i =
      do mac <- currentAccountId ctxt
         case mac of
-          Nothing -> return ()
+          Nothing  -> return ()
           Just aid -> State.Entry.delete ctxt aid i
         redirect root
 
