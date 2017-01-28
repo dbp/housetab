@@ -33,6 +33,7 @@ import           Handler.Auth
 import           Handler.Entry
 import           Handler.Home
 import           Handler.Set
+import           Handler.Settings
 import qualified State.Cache                       as Cache
 
 initializer :: IO Ctxt
@@ -73,6 +74,7 @@ site ctxt =
                 ,path "entries" ==> Handler.Entry.handle
                 ,path "sets" ==> Handler.Set.handle
                 ,end ==> Handler.Home.handle
+                ,path "settings" ==> Handler.Settings.handle
                 ,path "static" ==> staticServe "static"]
                 `fallthrough` do r <- render' ctxt "404"
                                  case r of

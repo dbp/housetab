@@ -53,7 +53,6 @@ importForm = "file" .: validateM c (Text.Digestive.Form.file)
   where c Nothing  = return $ Error "File missing"
         c (Just p) =
           do csv <- T.readFile p
-             T.putStrLn csv
              case CSV.decodeByName (T.encodeUtf8 csv) of
                Left err      -> return $ Error (T.pack err)
                Right (_, vs) -> return $ Success (V.toList vs)

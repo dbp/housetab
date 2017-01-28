@@ -12,6 +12,8 @@ import           Database.PostgreSQL.Simple.Types (PGArray (..))
 import           Context
 import           State.Types.Email
 import           State.Types.Entry
+import           State.Types.Person
+import qualified State.Types.Person               as Person
 
 
 create :: Ctxt -> Int -> Entry -> IO ()
@@ -29,3 +31,7 @@ update ctxt account_id entry = withResource (Context.db ctxt) $ \c -> void $ exe
 getForAccount :: Ctxt -> Int -> IO [Entry]
 getForAccount ctxt account_id =
   withResource (Context.db ctxt) $ \c -> query c "SELECT id, account_id, who, what, date, howmuch, whopays FROM entries WHERE account_id = ? AND archived IS NULL ORDER BY date DESC" (Only account_id)
+
+getForPerson :: Ctxt -> Person -> IO [Entry]
+getForPerson ctxt person =
+  withResource (Context.db ctxt) $ \c -> query c "SELECT id, account_id, who, what, date, howmuch, whopays FROM entries WHERE account_id = ? AND (who = ? OR ? = ANY(whopays)) AND archived IS NULL ORDER BY date DESC" (Person.accountId person, Person.id person, Person.id person)
