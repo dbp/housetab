@@ -1,12 +1,18 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Handler.Auth where
 
+import           Control.Lens               hiding (use)
 import           Control.Logging
+import           Data.Maybe
 import           Data.Monoid                ((<>))
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
+import           Network.AWS                hiding (Response)
+import           Network.AWS.SES
 import           Network.HTTP.Types.Method
 import           Network.Wai
+import           System.Environment
+import           System.IO                  (stdout)
 import           Web.Fn
 import           Web.Larceny
 
@@ -54,12 +60,21 @@ select ctxt account =
 create :: Ctxt -> Text -> Int -> IO (Maybe Response)
 create ctxt account email_id =
   do a <- State.create ctxt account email_id
-     case a of
-       Nothing  -> redirect $ root <> "/new"
-       Just a' ->
-         do -- TODO(dbp 2016-07-10): send this in email
-            log' $ root <> "/use?token=" <> Authentication.token a'
+     e' <- State.Account.getEmailById ctxt email_id
+     case (a,e') of
+       (Just a', Just em) ->
+         do lgr  <- newLogger Debug stdout
+            env  <- newEnv NorthVirginia Discover
+            domain <- fromMaybe "http://localhost:8000" <$> lookupEnv "DOMAIN"
+            let msg = "To log in to your HouseTab account, please visit the following link:\n\n" <> T.pack domain <> root <> "/use?token=" <> Authentication.token a' <> "\n\nThanks!\n\nP.S. If you did not try to log in, feel free to ignore this message."
+            runResourceT $ runAWS (env & envLogger .~ lgr) $
+                    send (sendEmail "info@housetab.org"
+                                    (destination & dToAddresses .~ [Email.email em])
+                                    (message (content "Housetab ++ Log in to your account")
+                                             (body & bText .~ (Just (content msg))))
+                                    )
             render' ctxt "auth/create"
+       _ -> redirect $ root <> "/new"
 
 use :: Ctxt -> Text -> IO (Maybe Response)
 use ctxt token =
