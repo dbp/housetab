@@ -1,11 +1,33 @@
 <apply template="base">
 
   <isLoggedIn>
+
+    <table class="people">
+      <tr><td></td><td>Email</td><td>Verified</td></tr>
+      <emails>
+        <tr>
+          <td><a href="/settings/email/${id}/delete" onclick="return confirm('Are you sure?');">delete</a></td>
+          <td><email/></td>
+          <td><verified/></td>
+        </tr>
+      </emails>
+      <tr>
+        <td colspan="2">
+          <form method="GET" action="/settings/email/new">
+            <label for="email">Email <input type="text" size="20" name="email"/></label>
+            <button type="submit">add</button>
+          </form>
+        </td>
+      </tr>
+    </table>
+
+    <hr/>
+
     <table class="people">
       <tr><td>Person</td><td>Shares</td></tr>
       <people>
         <tr>
-          <td><name/><br/><a href="/settings/person/${id}/delete" onclick="return confirm('Only works if there are no entries associated with person.')">delete</a></td>
+          <td><name/><br/><a href="/settings/person/${id}/delete" onclick="return confirm('Only works if there are no entries associated with person.');">delete</a></td>
           <td>
             <shares>
               <value/> (starting <start/>) <a href="/settings/share/${id}/delete" onclick="return confirm('Are you sure?')">delete</a><br/>

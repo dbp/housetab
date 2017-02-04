@@ -19,6 +19,7 @@ import           Web.Larceny
 import           Base
 import qualified State.Account
 import qualified State.Auth                 as State
+import qualified State.Email
 import qualified State.Types.Account        as Account
 import qualified State.Types.Authentication as Authentication
 import qualified State.Types.Email          as Email
@@ -38,7 +39,7 @@ new ctxt = render' ctxt "auth/new"
 
 select :: Ctxt -> Text -> IO (Maybe Response)
 select ctxt account =
-  do ems <- State.Account.getEmails ctxt account
+  do ems <- State.Email.getVerifiedEmails ctxt account
      renderWith' ctxt (subs [("account", textFill account)
                             ,("emails", mapSubs (\e -> subs [("id", textFill (tshow (Email.id e)))
                                                             ,("email", textFill $ obfuscate (Email.email e))]) ems)])
@@ -60,7 +61,7 @@ select ctxt account =
 create :: Ctxt -> Text -> Int -> IO (Maybe Response)
 create ctxt account email_id =
   do a <- State.create ctxt account email_id
-     e' <- State.Account.getEmailById ctxt email_id
+     e' <- State.Email.getEmailById ctxt email_id
      case (a,e') of
        (Just a', Just em) ->
          do lgr  <- newLogger Debug stdout

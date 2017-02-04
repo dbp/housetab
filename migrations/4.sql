@@ -1,0 +1,1 @@
+ALTER TABLE emails ALTER COLUMN verified_at DROP NOT NULL;

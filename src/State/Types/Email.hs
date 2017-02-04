@@ -8,7 +8,7 @@ data Email =
      Email { id         :: Int
            , accountId  :: Int
            , email      :: Text
-           , verifiedAt :: UTCTime
+           , verifiedAt :: Maybe UTCTime
            , token      :: Text
            } deriving (Eq, Show)
 

@@ -2,20 +2,30 @@
 {-# LANGUAGE TupleSections     #-}
 module Handler.Settings where
 
+import           Control.Lens
+import           Data.Maybe
+import           Data.Monoid
 import           Data.Text          (Text)
 import qualified Data.Text          as T
 import qualified Data.Text.Encoding as T
 import           Data.Time.Clock
 import           Data.Time.Format
+import           Network.AWS        hiding (Response)
+import           Network.AWS.SES
 import           Network.Wai
+import           System.Environment
+import           System.IO          (stdout)
 import           Web.Fn
 import           Web.Larceny        (fillChildrenWith, mapSubs, subs, textFill)
 
 import           Base
 
+import qualified State.Email
 import qualified State.Entry
 import qualified State.Person
 import qualified State.Share
+import           State.Types.Email  (Email)
+import qualified State.Types.Email  as Email
 import           State.Types.Person (Person)
 import qualified State.Types.Person as Person
 import           State.Types.Share  (Share)
@@ -26,6 +36,9 @@ root = "/settings"
 
 handle :: Ctxt -> IO (Maybe Response)
 handle ctxt = route ctxt [end ==> indexH
+                         ,path "email" // path "new" // param "email" ==> newEmailH
+                         ,path "email" // segment // path "delete" ==> deleteEmailH
+                         ,path "email" // segment // path "verify" ==> verifyEmailH
                          ,path "person" // path "new" // param "name" ==> newPersonH
                          ,path "person" // segment // path "delete" ==> deletePersonH
                          ,path "share" // path "new" // param "person" // param "date" // param "value" ==> newShareH
@@ -37,6 +50,13 @@ personShareSubs (p,ss) =
        ,("name", textFill $ Person.name p)
        ,("shares", mapSubs (\s -> subs [("id", textFill $ tshow $ Share.id s), ("start", textFill $ (T.pack $ formatTime defaultTimeLocale "%Y-%m-%d" (Share.start s))), ("value", textFill $ tshow $ Share.value s)]) ss)]
 
+emailSubs :: Email -> Substitutions
+emailSubs e = subs [("id", textFill $ tshow $ Email.id e)
+                   ,("email", textFill $ Email.email e)
+                   ,("verified", textFill $ case Email.verifiedAt e of
+                                              Nothing -> "no"
+                                              Just _  -> "yes")]
+
 indexH :: Ctxt -> IO (Maybe Response)
 indexH ctxt =
   do mac <- currentAccountId ctxt
@@ -46,9 +66,64 @@ indexH ctxt =
          do _people <- State.Person.getForAccount ctxt aid
             people <- mapM (\p -> (p,) <$> State.Share.getForPerson ctxt (Person.id p)) _people
             now <- getCurrentTime
+            emails <- State.Email.getEmailsByAccountId ctxt aid
             let s = subs [("people", mapSubs personShareSubs people)
-                         ,("now", textFill $ (T.pack $ formatTime defaultTimeLocale "%Y-%m-%d" now))]
+                         ,("now", textFill $ (T.pack $ formatTime defaultTimeLocale "%Y-%m-%d" now))
+                         ,("emails", mapSubs emailSubs emails)]
             renderWith' ctxt s "settings"
+
+newEmailH :: Ctxt -> Text -> IO (Maybe Response)
+newEmailH ctxt email =
+  do mac <- currentAccountId ctxt
+     case mac of
+       Nothing -> redirect "/"
+       Just aid ->
+         do e' <- State.Email.new ctxt aid email
+            case e' of
+              Nothing -> redirect root
+              Just e -> do
+                lgr  <- newLogger Debug stdout
+                env  <- newEnv NorthVirginia Discover
+                domain <- fromMaybe "http://localhost:8000" <$> lookupEnv "DOMAIN"
+                let msg = "To confirm this email address for your HouseTab account, please visit the following link:\n\n" <> T.pack domain <> root <> "/email/" <> tshow (Email.id e) <> "-" <> Email.token e <> "/verify\n\nThanks!\n\nP.S. If you do not recognize this, feel free to ignore this message."
+                runResourceT $ runAWS (env & envLogger .~ lgr) $
+                        send (sendEmail "info@housetab.org"
+                                            (destination & dToAddresses .~ [Email.email e])
+                                                (message (content "Housetab ++ Confirm email address")
+                                                             (body & bText .~ (Just (content msg))))
+                                                     )
+                redirect root
+
+deleteEmailH :: Ctxt -> Int -> IO (Maybe Response)
+deleteEmailH ctxt i =
+  do mac <- currentAccountId ctxt
+     case mac of
+       Nothing -> redirect "/"
+       Just aid ->
+         do ems <- State.Email.getEmailsByAccountId ctxt aid
+            if length ems > 1
+               then case filter (\e -> Email.id e == i) ems of
+                      [] -> redirect root
+                      (x:_) -> do State.Email.delete ctxt aid (Email.id x)
+                                  redirect root
+               else redirect root
+
+
+data EmailVerify = EmailVerify Int Text
+
+instance FromParam EmailVerify where
+  fromParam [x] = case T.splitOn "-" x of
+                    [i',t] -> case fromParam [i'] of
+                                Left e  -> Left e
+                                Right i -> Right (EmailVerify i t)
+                    _ -> Left ParamUnparsable
+  fromParam []  = Left ParamMissing
+  fromParam _   = Left ParamTooMany
+
+verifyEmailH :: Ctxt -> EmailVerify -> IO (Maybe Response)
+verifyEmailH ctxt (EmailVerify i t) =
+  do State.Email.verify ctxt i t
+     redirect root
 
 newPersonH :: Ctxt -> Text -> IO (Maybe Response)
 newPersonH ctxt name =
