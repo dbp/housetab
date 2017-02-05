@@ -2,12 +2,14 @@
 module Site where
 
 import           Configuration.Dotenv              (loadFile)
-import           Control.Monad                     (when)
+import           Control.Monad                     (void, when)
 import           Data.Default                      (def)
 import           Data.Maybe                        (fromMaybe)
 import           Data.Monoid                       ((<>))
 import           Data.Pool                         (Pool, createPool)
 import           Data.Serialize.Text               ()
+import           Data.String                       (fromString)
+import           Data.Text                         (Text)
 import qualified Data.Text                         as T
 import qualified Data.Text.Encoding                as T
 import qualified Data.Vault.Lazy                   as Vault
@@ -36,6 +38,7 @@ import           Handler.Set
 import           Handler.Settings
 import qualified State.Cache                       as Cache
 
+
 initializer :: IO Ctxt
 initializer = do
   envExists <- doesFileExist ".env"
@@ -53,7 +56,7 @@ initializer = do
   session <- Vault.newKey
   return (Ctxt defaultFnRequest pgpool lib session)
 
-app :: IO Application
+app :: IO (Ctxt, Application)
 app = do ctxt <- initializer
          mbs <- Cache.get' ctxt "session-key"
          let newkey = do (bs, k) <- randomKey
@@ -66,7 +69,7 @@ app = do ctxt <- initializer
                     Right k -> return k
                     Left _  -> newkey
          let store = clientsessionStore k
-         return (withSession store "_session" def {setCookiePath = Just "/"} (sess ctxt) (toWAI ctxt site))
+         return (ctxt, withSession store "_session" def {setCookiePath = Just "/"} (sess ctxt) (toWAI ctxt site))
 
 site :: Ctxt -> IO Response
 site ctxt =

@@ -18,3 +18,5 @@ extra-deps:
 - wai-session-clientsession-0.1
 - cereal-text-0.1.0.2
 - digestive-functors-0.8.1.1
+- rivet-adaptor-postgresql-0.1.0.0
+- rivet-core-0.2.0.0
