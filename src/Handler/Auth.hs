@@ -71,7 +71,7 @@ create ctxt account email_id =
             runResourceT $ runAWS (env & envLogger .~ lgr) $
                     send (sendEmail "info@housetab.org"
                                     (destination & dToAddresses .~ [Email.email em])
-                                    (message (content "Housetab ++ Log in to your account")
+                                    (message (content "Housetab :: Log in to your account")
                                              (body & bText .~ (Just (content msg))))
                                     )
             render' ctxt "auth/create"

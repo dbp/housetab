@@ -16,7 +16,8 @@ import           Network.Wai
 import           System.Environment
 import           System.IO          (stdout)
 import           Web.Fn
-import           Web.Larceny        (fillChildrenWith, mapSubs, subs, textFill)
+import           Web.Larceny        (fillChildren, fillChildrenWith, mapSubs,
+                                     subs, textFill)
 
 import           Base
 
@@ -53,6 +54,9 @@ personShareSubs (p,ss) =
 emailSubs :: Email -> Substitutions
 emailSubs e = subs [("id", textFill $ tshow $ Email.id e)
                    ,("email", textFill $ Email.email e)
+                   ,("not-verified", case Email.verifiedAt e of
+                                       Nothing -> fillChildren
+                                       Just _  -> textFill "")
                    ,("verified", textFill $ case Email.verifiedAt e of
                                               Nothing -> "no"
                                               Just _  -> "yes")]
@@ -89,7 +93,7 @@ newEmailH ctxt email =
                 runResourceT $ runAWS (env & envLogger .~ lgr) $
                         send (sendEmail "info@housetab.org"
                                             (destination & dToAddresses .~ [Email.email e])
-                                                (message (content "Housetab ++ Confirm email address")
+                                                (message (content "Housetab :: Confirm email address")
                                                              (body & bText .~ (Just (content msg))))
                                                      )
                 redirect root
