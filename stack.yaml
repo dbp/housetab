@@ -1,11 +1,10 @@
 resolver: lts-7.14
 packages:
 - '.'
-- '../larceny'
-# - location:
-#     git: https://github.com/positiondev/larceny.git
-#     commit: 580ef43758efd79f8aec31375a8d89a3f403ed6e
-#   extra-dep: true
+- location:
+    git: https://github.com/positiondev/larceny.git
+    commit: b2bbca4dd5cf9054972150e88a0974f0bd0c850e
+  extra-dep: true
 - location:
       git: https://github.com/positiondev/fn.git
       commit: 5898878bff740665986bb49c4bdc48c11646c3b1
