@@ -27,6 +27,7 @@ import           Site                              (app)
 import           System.Directory                  (doesFileExist,
                                                     listDirectory)
 import           System.Environment                (lookupEnv)
+import GHC.IO.Encoding
 
 -- TODO(dbp 2017-02-05): Upstream this into rivet-adaptor-postgresql.
 setupConn :: Monad m
@@ -58,7 +59,8 @@ setupConn h conn =
 
 main :: IO ()
 main = withStdoutLogging $
-       do envExists <- doesFileExist ".env"
+       do setLocaleEncoding utf8
+          envExists <- doesFileExist ".env"
           when envExists $ loadFile False ".env"
           port <- maybe 8000 read <$> lookupEnv "PORT"
           log' "Running any pending migrations..."
