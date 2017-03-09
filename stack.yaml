@@ -3,7 +3,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/positiondev/larceny.git
-    commit: b2bbca4dd5cf9054972150e88a0974f0bd0c850e
+    commit: 40bb2dca8ddfa2e7d1cfbfdff50226c921c1db32
   extra-dep: true
 - location:
       git: https://github.com/positiondev/fn.git
@@ -19,3 +19,4 @@ extra-deps:
 - digestive-functors-0.8.1.1
 - rivet-adaptor-postgresql-0.1.0.0
 - rivet-core-0.2.0.0
+- html-entities-1.1.2
