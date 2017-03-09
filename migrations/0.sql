@@ -38,11 +38,6 @@ CREATE TABLE log (
 );
 
 
-CREATE TABLE migrations (
-    name text NOT NULL,
-    run_at timestamp with time zone DEFAULT now() NOT NULL
-);
-
 CREATE TABLE persons (
     id serial PRIMARY KEY,
     account_id integer NOT NULL,
