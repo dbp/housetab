@@ -23,7 +23,7 @@ import qualified Database.Rivet.Main               as Rivet
 import           Database.Rivet.V0                 (sql)
 import           Network.Wai                       (Middleware, pathInfo)
 import           Network.Wai.Handler.Warp          (run)
-import           Site                              (app)
+import           Site                              (initializer, app)
 import           System.Directory                  (doesFileExist,
                                                     listDirectory)
 import           System.Environment                (lookupEnv)
@@ -64,7 +64,7 @@ main = withStdoutLogging $
           when envExists $ loadFile False ".env"
           port <- maybe 8000 read <$> lookupEnv "PORT"
           log' "Running any pending migrations..."
-          (ctxt, app') <- app
+          ctxt <- initializer
           fs <- sort . filter (".sql" `isSuffixOf`) <$> listDirectory "migrations"
           ms <- mapM (\f -> do c <- T.readFile ("migrations/" <> f)
                                T.putStrLn (T.reverse $ T.drop 4 $ T.reverse $ T.pack f)
@@ -72,6 +72,7 @@ main = withStdoutLogging $
           withResource (db ctxt) (\c -> do adaptor <- setupConn id c
                                            Rivet.main adaptor Rivet.MigrateUp ms)
           log' ("Starting server on port " <> pack (show port))
+          app' <- app ctxt 
           catch (run port app')
                 (\(_ :: SomeException) ->
                    log' "Shutting down...")

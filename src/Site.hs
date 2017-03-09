@@ -58,8 +58,8 @@ initializer = do
   dns <- makeResolvSeed defaultResolvConf
   return (Ctxt defaultFnRequest pgpool lib session dns)
 
-app :: IO (Ctxt, Application)
-app = do ctxt <- initializer
+app :: Ctxt -> IO Application
+app ctxt = do
          mbs <- Cache.get' ctxt "session-key"
          let newkey = do (bs, k) <- randomKey
                          Cache.set' ctxt "session-key" bs
@@ -71,7 +71,7 @@ app = do ctxt <- initializer
                     Right k -> return k
                     Left _  -> newkey
          let store = clientsessionStore k
-         return (ctxt, withSession store "_session" def {setCookiePath = Just "/"} (sess ctxt) (toWAI ctxt site))
+         return (withSession store "_session" def {setCookiePath = Just "/"} (sess ctxt) (toWAI ctxt site))
 
 site :: Ctxt -> IO Response
 site ctxt =
