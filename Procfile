@@ -1,1 +1,1 @@
-web: stack exec housetab
+web: /app/.local/bin/housetab
