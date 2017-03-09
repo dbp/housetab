@@ -10,10 +10,10 @@
       <ul class="nav">
         <isLoggedIn>
           <li class="home"><a href="/">HT :: <loggedInAccount/></a></li>
-          <li><a href="/entries/add">Add Entry</a></li>
-          <li><a href="/sets">Import/Export</a></li>
-          <li><a href="/settings">Settings</a></li>
-          <li><a href="/auth/destroy">Logout</a></li>
+          <li><a class="add" href="/entries/add">Add Entry</a></li>
+          <li><a class="export" href="/sets">Import/Export</a></li>
+          <li><a class="settings" href="/settings">Settings</a></li>
+          <li><a class="logout" href="/auth/destroy">Logout</a></li>
         </isLoggedIn>
         <notLoggedIn>
           <li class="home"><a href="/">HT :: </a></li>
@@ -24,6 +24,17 @@
     </div>
     <div class="content">
       <apply-content/>
+    </div>
+
+    <div class="footer-holder">
+      <div class="footer">
+        Source at <a href="https://github.com/dbp/housetab">github.com/dbp/housetab</a> &mdash;
+        Icons from the Noun Project:
+        Cloud Download by Icons fest;
+        add by juli;
+        setting by cathy moser;
+        Power by i cons.
+      </div>
     </div>
 
   </body>

@@ -2,8 +2,8 @@
 module Context where
 
 import           Control.Monad              (join)
-import           Control.Monad.Trans        (liftIO)
-import qualified Data.Map                   as M
+
+
 import           Data.Monoid                ((<>))
 import           Data.Pool                  (Pool)
 import           Data.Text                  (Text)
@@ -14,6 +14,7 @@ import           Network.Wai                (Request (..), Response)
 import           Network.Wai.Session        (Session)
 import           Web.Fn
 import qualified Web.Larceny                (Library, Substitutions, Fill)
+import Network.DNS.Resolver 
 
 type Fill = Web.Larceny.Fill ()
 type Library = Web.Larceny.Library ()
@@ -23,11 +24,12 @@ data Ctxt = Ctxt { request :: FnRequest
                  , db      :: Pool Connection
                  , library :: Library
                  , sess    :: Vault.Key (Session IO Text (Maybe Text))
+                 , dns     :: ResolvSeed
                  }
 
 instance RequestContext Ctxt where
-  getRequest (Ctxt r _ _ _) = r
-  setRequest (Ctxt _ p l s) r = Ctxt r p l s
+  getRequest (Ctxt r _ _ _ _) = r
+  setRequest (Ctxt _ p l s d) r = Ctxt r p l s d
 
 
 tshow :: Show a => a -> Text

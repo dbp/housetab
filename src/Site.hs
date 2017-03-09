@@ -16,6 +16,7 @@ import qualified Data.Vault.Lazy                   as Vault
 import           Database.PostgreSQL.Simple        (ConnectInfo (..),
                                                     Connection, close,
                                                     connectPostgreSQL)
+import           Network.DNS.Resolver
 import           Network.Wai                       (Application, Request,
                                                     Response)
 import           Network.Wai.Session               (withSession)
@@ -28,9 +29,9 @@ import           Web.Fn
 import           Web.Heroku                        (parseDatabaseUrl)
 import           Web.Larceny
 
-
 import           Base
 
+import           Handler.Account
 import           Handler.Auth
 import           Handler.Entry
 import           Handler.Home
@@ -54,7 +55,8 @@ initializer = do
                         close 1 60 20
   lib <- loadTemplates "templates" defaultOverrides
   session <- Vault.newKey
-  return (Ctxt defaultFnRequest pgpool lib session)
+  dns <- makeResolvSeed defaultResolvConf
+  return (Ctxt defaultFnRequest pgpool lib session dns)
 
 app :: IO (Ctxt, Application)
 app = do ctxt <- initializer
@@ -73,7 +75,8 @@ app = do ctxt <- initializer
 
 site :: Ctxt -> IO Response
 site ctxt =
-     route ctxt [path "auth" ==> Handler.Auth.handle
+     route ctxt [path "account" ==> Handler.Account.handle
+                ,path "auth" ==> Handler.Auth.handle
                 ,path "entries" ==> Handler.Entry.handle
                 ,path "sets" ==> Handler.Set.handle
                 ,end ==> Handler.Home.handle

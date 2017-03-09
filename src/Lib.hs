@@ -1,20 +1,20 @@
 {-# LANGUAGE TupleSections #-}
 module Lib where
 
-import qualified Data.ByteString       as BS
+
 import           Data.List             (groupBy, notElem, sort)
 import           Data.Time.Calendar
 import           Data.Time.Clock
-import           Text.Printf           (printf)
 
-import qualified Data.ByteString.Char8 as B8
+
+
 
 import           State.Types.Entry     (Entry (Entry))
-import qualified State.Types.Entry     as Entry
+
 import           State.Types.Person    (Person (Person))
 import qualified State.Types.Person    as Person
 import           State.Types.Share     (Share (Share))
-import qualified State.Types.Share     as Share
+
 
 
 type Spent = Double

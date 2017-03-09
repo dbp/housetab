@@ -31,6 +31,8 @@ import           State.Types.Person (Person)
 import qualified State.Types.Person as Person
 import           State.Types.Share  (Share)
 import qualified State.Types.Share  as Share
+import qualified State.Types.Account  as Account
+
 
 root :: Text
 root = "/settings"
@@ -82,21 +84,8 @@ newEmailH ctxt email =
      case mac of
        Nothing -> redirect "/"
        Just aid ->
-         do e' <- State.Email.new ctxt aid email
-            case e' of
-              Nothing -> redirect root
-              Just e -> do
-                lgr  <- newLogger Debug stdout
-                env  <- newEnv NorthVirginia Discover
-                domain <- fromMaybe "http://localhost:8000" <$> lookupEnv "DOMAIN"
-                let msg = "To confirm this email address for your HouseTab account, please visit the following link:\n\n" <> T.pack domain <> root <> "/email/" <> tshow (Email.id e) <> "-" <> Email.token e <> "/verify\n\nThanks!\n\nP.S. If you do not recognize this, feel free to ignore this message."
-                runResourceT $ runAWS (env & envLogger .~ lgr) $
-                        send (sendEmail "info@housetab.org"
-                                            (destination & dToAddresses .~ [Email.email e])
-                                                (message (content "Housetab :: Confirm email address")
-                                                             (body & bText .~ (Just (content msg))))
-                                                     )
-                redirect root
+         do State.Email.new ctxt aid email
+            redirect root
 
 deleteEmailH :: Ctxt -> Int -> IO (Maybe Response)
 deleteEmailH ctxt i =
@@ -126,7 +115,10 @@ instance FromParam EmailVerify where
 
 verifyEmailH :: Ctxt -> EmailVerify -> IO (Maybe Response)
 verifyEmailH ctxt (EmailVerify i t) =
-  do State.Email.verify ctxt i t
+  do ma <- State.Email.verify ctxt i t
+     case ma of
+       Nothing -> return ()
+       Just a -> setInSession ctxt "account_id" (tshow $ Account.id a) 
      redirect root
 
 newPersonH :: Ctxt -> Text -> IO (Maybe Response)

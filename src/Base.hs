@@ -5,24 +5,31 @@ module Base
        , renderWith'
        , renderText'
        , currentAccountId
+       , emailDnsCheck
        )
        where
 
-import           Control.Monad.Trans (liftIO)
-import qualified Data.Map            as M
-import           Data.Maybe          (isJust, isNothing)
-import           Data.Text           (Text)
-import qualified Data.Text           as T
-import           Network.Wai         (Response)
-import           Text.Read           (readMaybe)
-import           Web.Fn              (okHtml, okText)
-import           Web.Larceny         (Fill (..), fillChildren, render,
-                                      renderWith, subs, textFill, textFill')
+import           Control.Monad.Trans  (liftIO)
+import qualified Data.Map             as M
+import           Data.Maybe           (isJust, isNothing)
+import           Data.Text            (Text)
+import qualified Data.Text            as T
+import qualified Data.Text.Encoding   as T
+import           Network.DNS.Lookup
+import           Network.DNS.Resolver
+import           Network.DNS.Types
+import           Network.Wai          (Response)
+import           Text.Digestive.Form
+import           Text.Digestive.Types (Result (..))
+import           Text.Read            (readMaybe)
+import           Web.Fn               (okHtml, okText)
+import           Web.Larceny          (Fill (..), fillChildren, render,
+                                       renderWith, subs, textFill, textFill')
 
 import           Context
-import qualified Context             as C
+import qualified Context              as C
 import qualified State.Account
-import qualified State.Types.Account as Account
+import qualified State.Types.Account  as Account
 
 render' :: Ctxt -> Text -> IO (Maybe Response)
 render' ctxt = renderWith' ctxt mempty
@@ -65,3 +72,16 @@ defaultSubs ctxt =
                     case a of
                       Nothing -> return ""
                       Just a' -> return (Account.name a'))]
+
+emailDnsCheck :: Ctxt -> Form Text IO Text
+                      -> Form Text IO Text
+emailDnsCheck ctxt = checkM "Email address domain (after the @) not valid." $ \e ->
+                       do let host = T.encodeUtf8 (T.drop 1 (snd (T.breakOn "@" e)))
+                          res <- withResolver (dns ctxt) (`lookupMX` host)
+                          case res of
+                            Left err -> case err of
+                                          IllegalDomain -> return False
+                                          NameError     -> return False
+                                          _             -> return True
+                            Right [] -> return False
+                            _ -> return True

@@ -1,7 +1,7 @@
 module State.Types.Account where
 import           Data.Text                            (Text)
-import           Data.Time.Clock
-import           Database.PostgreSQL.Simple.FromField
+
+
 import           Database.PostgreSQL.Simple.FromRow
 
 data Account =
