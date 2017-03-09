@@ -6,7 +6,7 @@ import           Context
 import           Control.Exception                 (SomeException (..), catch)
 import           Control.Logging                   (log', withStdoutLogging)
 import           Control.Monad                     (void, when)
-import           Data.List                         (isSuffixOf)
+import           Data.List                         (isSuffixOf, sort)
 import           Data.Monoid                       ((<>))
 import           Data.Pool                         (withResource)
 import           Data.String                       (fromString)
@@ -65,7 +65,7 @@ main = withStdoutLogging $
           port <- maybe 8000 read <$> lookupEnv "PORT"
           log' "Running any pending migrations..."
           (ctxt, app') <- app
-          fs <- filter (".sql" `isSuffixOf`) <$> listDirectory "migrations"
+          fs <- sort . filter (".sql" `isSuffixOf`) <$> listDirectory "migrations"
           ms <- mapM (\f -> do c <- T.readFile ("migrations/" <> f)
                                T.putStrLn (T.reverse $ T.drop 4 $ T.reverse $ T.pack f)
                                return (T.reverse $ T.drop 4 $ T.reverse $ T.pack f, sql c "")) fs
