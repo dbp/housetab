@@ -29,12 +29,12 @@
 
               <ul id="readmore" style="display: none">
                   <li>HouseTab was written in 2011, and has run, unchanged,
-                      since then. It was build and then hosted since then (making no money) by
-                      <a href="http://positionstudios.com/">Position Studion</a>,
+                      since then. It was built and then hosted since then (making no money) by
+                      <a href="http://positionstudios.com/">Position Studios</a>,
                       and it is <strong>a bit dated</strong>. </li>
                   <li>All the software it uses is also old, so making changes is
                       quite difficult - in particular, <strong>we couldn't move it to more modern hosting!</strong></li>
-                  <li>The database that it uses (MongoDB) is unecessarily buggy, which has
+                  <li>The database that it uses (MongoDB) is unnecessarily buggy, which has
                       increased the work that we've had to do in order to keep
                       everything working.</li>
                   <li>In mid-2016, I started <strong>rewriting it from scratch</strong>, with
@@ -45,7 +45,7 @@
                       passwords. Migrating encrypted passwords is difficult in general (because
                       you have to continue to use whatever encryption scheme was used),
                       and while it was possible, the rewrite instead relies
-                      instead on <strong>one-time links that are sent our when users
+                      on <strong>one-time links that are sent our when users
                       want to log in</strong>.</li>
                   <li>It's still completely <strong>open source</strong>: <a href="https://github.com/dbp/housetab">github.com/dbp/housetab</a>,
                       still <strong>completely free</strong>! The rewrite was primarily done to make it easier to mantain.</li>
