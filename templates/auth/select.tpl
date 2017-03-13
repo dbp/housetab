@@ -13,7 +13,11 @@
       </select>
     </label>
     <button type="submit">Submit</button>
-  </form>
+            </form>
+
+            <p>
+Please select an email address for us to send a secure one-time login link to. Once you've logged in, you can add more email addresses to your account. Note that these email addresses are somewhat obscured for security.
+            </p>
         </div>
-        
+
 </apply>
