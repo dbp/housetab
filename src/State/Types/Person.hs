@@ -8,7 +8,7 @@ data Person =
      Person { id        :: Int
             , accountId :: Int
             , name      :: Text
-            } deriving (Eq, Show, Ord)
+            } deriving (Eq, Show, Read, Ord)
 
 instance FromRow Person where
   fromRow = Person <$> field

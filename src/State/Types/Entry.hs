@@ -13,7 +13,7 @@ data Entry =
            , date        :: UTCTime
            , howmuch     :: Double
            , whopaysIds  :: [Int]
-           } deriving (Eq, Show)
+           } deriving (Eq, Show, Read)
 
 instance FromRow Entry where
   fromRow = Entry <$> field
