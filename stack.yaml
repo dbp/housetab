@@ -3,7 +3,7 @@ packages:
 - '.'
 - location:
     git: https://github.com/positiondev/larceny.git
-    commit: e8fcf685e30e36c6b3af75c750be00f0bd08367a
+    commit: 51b9c6945ef656fb489b2fc1a035439f9fb56885
   extra-dep: true
 # - '../larceny/'
 - location:
