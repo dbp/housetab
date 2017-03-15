@@ -3,8 +3,9 @@ packages:
 - '.'
 - location:
     git: https://github.com/positiondev/larceny.git
-    commit: 40bb2dca8ddfa2e7d1cfbfdff50226c921c1db32
+    commit: e8fcf685e30e36c6b3af75c750be00f0bd08367a
   extra-dep: true
+# - '../larceny/'
 - location:
       git: https://github.com/positiondev/fn.git
       commit: 5898878bff740665986bb49c4bdc48c11646c3b1
