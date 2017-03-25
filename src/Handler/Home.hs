@@ -4,7 +4,7 @@ module Handler.Home where
 
 import           Control.Logging
 import           Control.Monad.Trans       (liftIO)
-import           Data.Maybe                (fromJust)
+import           Data.Maybe                (fromJust, fromMaybe)
 import           Data.Monoid               ((<>))
 import           Data.Text                 (Text)
 import qualified Data.Text                 as T
@@ -13,7 +13,7 @@ import           Network.HTTP.Types.Method
 import           Network.Wai
 import           Web.Fn
 import           Web.Larceny               (fillChildrenWith, mapSubs, subs,
-                                            textFill)
+                                            textFill, fillChildren)
 
 import           Base
 import qualified Lib
@@ -30,9 +30,10 @@ import qualified State.Types.Share         as Share
 root :: Text
 root = "/"
 
-handle :: Ctxt -> IO (Maybe Response)
-handle ctxt =
-  do ma <- currentAccountId ctxt
+handle :: Ctxt -> Maybe Int -> IO (Maybe Response)
+handle ctxt pg' =
+  do let pg = fromMaybe 1 pg'
+     ma <- currentAccountId ctxt
      s <-
        case ma of
          Nothing -> return $ subs [("entries", textFill "")]
@@ -42,9 +43,17 @@ handle ctxt =
               ps_ws <- mapM (\p -> (p, ) <$> State.Share.getForPerson ctxt (Person.id p)) ps
               let (Lib.Result people today) =
                     Lib.run ps_ws es
-              return $ subs [("entries", mapSubs (entrySubs ps) es)
-                            ,("results", mapSubs resultSubs people)]
+              let es_show = take 100 $ drop (100 * (pg - 1)) es
+              return $ subs [("entries", mapSubs (entrySubs ps) es_show)
+                            ,("results", mapSubs resultSubs people)
+                            ,("pages", pagesSubs pg (ceiling $ fromIntegral (length es) / 100) )]
      renderWith' ctxt s "index"
+
+pagesSubs :: Int -> Int -> Fill
+pagesSubs pg n = mapSubs (\n -> subs [("page", textFill (tshow n))
+                                  ,("is-current", if n == pg then fillChildren else textFill "")
+                                  ,("not-current", if n == pg then textFill "" else fillChildren)])
+                      (take n [1..])
 
 moneyShow :: Double -> Text
 moneyShow d =

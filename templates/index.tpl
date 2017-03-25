@@ -15,6 +15,21 @@
     <div class="card">
         <apply template="entry/list"></apply>
     </div>
+
+    <p style="text-align: center">
+        Page
+        <pages>
+            <not-current>
+                <a href="?page=${page}"><page/></a>
+            </not-current>
+            <is-current>
+                <a href="?page=${page}">*</a>
+            </is-current>
+            &nbsp;
+        </pages>
+    </p>
+
+
   </isLoggedIn>
 
   <notLoggedIn>

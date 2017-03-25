@@ -79,7 +79,7 @@ site ctxt =
                 ,path "auth" ==> Handler.Auth.handle
                 ,path "entries" ==> Handler.Entry.handle
                 ,path "sets" ==> Handler.Set.handle
-                ,end ==> Handler.Home.handle
+                ,end // param "page" ==> Handler.Home.handle
                 ,path "settings" ==> Handler.Settings.handle
                 ,path "static" ==> staticServe "static"]
                 `fallthrough` do r <- render' ctxt "404"
