@@ -49,7 +49,7 @@ handle ctxt pg' =
               let es_show = take entriesPerPage $ drop (entriesPerPage * (pg - 1)) es
               return $ subs [("entries", mapSubs (entrySubs ps) es_show)
                             ,("results", mapSubs resultSubs people)
-                            ,("pages", pagesSubs pg (ceiling $ fromIntegral (length es) / entriesPerPage) )]
+                            ,("pages", pagesSubs pg (ceiling $ fromIntegral (length es) / fromIntegral entriesPerPage) )]
      renderWith' ctxt s "index"
 
 pagesSubs :: Int -> Int -> Fill
