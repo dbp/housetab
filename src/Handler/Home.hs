@@ -30,6 +30,9 @@ import qualified State.Types.Share         as Share
 root :: Text
 root = "/"
 
+entriesPerPage :: Int
+entriesPerPage = 50
+
 handle :: Ctxt -> Maybe Int -> IO (Maybe Response)
 handle ctxt pg' =
   do let pg = fromMaybe 1 pg'
@@ -43,10 +46,10 @@ handle ctxt pg' =
               ps_ws <- mapM (\p -> (p, ) <$> State.Share.getForPerson ctxt (Person.id p)) ps
               let (Lib.Result people today) =
                     Lib.run ps_ws es
-              let es_show = take 100 $ drop (100 * (pg - 1)) es
+              let es_show = take entriesPerPage $ drop (entriesPerPage * (pg - 1)) es
               return $ subs [("entries", mapSubs (entrySubs ps) es_show)
                             ,("results", mapSubs resultSubs people)
-                            ,("pages", pagesSubs pg (ceiling $ fromIntegral (length es) / 100) )]
+                            ,("pages", pagesSubs pg (ceiling $ fromIntegral (length es) / entriesPerPage) )]
      renderWith' ctxt s "index"
 
 pagesSubs :: Int -> Int -> Fill
