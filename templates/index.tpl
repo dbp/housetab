@@ -8,7 +8,7 @@
       <div class="card small">
         <h3><person><name/></person></h3>
         <h4>Spent <spent/></h4>
-        <h4>Balance <owes/></h4>
+        <h4>Balance <balance/></h4>
       </div>
     </results>
 

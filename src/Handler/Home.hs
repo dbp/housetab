@@ -99,4 +99,4 @@ resultSubs :: (Person.Person, Lib.Spent, Lib.Owes)
 resultSubs (p, s, o) =
       subs [("person", fillChildrenWith (personSubs p))
            ,("spent", textFill (moneyShow s))
-           ,("owes", textFill (moneyShow o))]
+           ,("balance", textFill (moneyShow (negate o)))]
