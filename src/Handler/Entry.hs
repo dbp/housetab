@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Handler.Entry where
 
+import           Control.Monad (mplus)
 import           Control.Logging
 import           Control.Monad.Trans       (liftIO)
 import           Data.Maybe                (fromJust, fromMaybe)
@@ -44,7 +45,8 @@ addH ctxt =
           Nothing -> redirect root
           Just aid ->
             do people <- State.Person.getForAccount ctxt aid
-               runForm ctxt "add" (entryForm people Nothing) $ \r ->
+               today <- utctDay <$> getCurrentTime
+               runForm ctxt "add" (entryForm today people Nothing) $ \r ->
                  case r of
                    (v, Nothing) -> renderWith' ctxt (formFills v) "entry/edit"
                    (_, Just entry') -> do State.Entry.create ctxt aid entry'
@@ -70,22 +72,25 @@ fst3 (a,_,_) = a
 snd3 (_,a,_) = a
 trd3 (_,_,a) = a
 
-entryForm :: [Person] -> Maybe Entry -> Form Text IO Entry
-entryForm people me =
+peopleForm :: [Person] -> [Int] -> Form Text IO [Int]
+peopleForm people ids = ((map fst3 . filter trd3) <$>
+                         listOf
+                         (\mp -> checkboxForm (maybe Nothing (\p ->
+                                                                Just ( Person.id p
+                                                                     , Person.name p
+                                                                     , Person.id p `elem` ids)) mp))
+                         (Just people))
+
+entryForm :: Day -> [Person] -> Maybe Entry -> Form Text IO Entry
+entryForm today people me =
   Entry.Entry
   <$> pure (fromMaybe 0 (Entry.id <$> me))
   <*> pure (fromMaybe 0 (Entry.accountId <$> me))
   <*> "who" .: choice (map (\p -> (Person.id p, Person.name p)) people) (Entry.whoId <$> me)
   <*> "description" .: text (Entry.description <$> me)
-  <*> "date" .: ((\d -> UTCTime d 0) <$> dateFormlet "%F" (utctDay <$> (Entry.date <$> me)))
+  <*> "date" .: ((\d -> UTCTime d 0) <$> dateFormlet "%F" ((utctDay <$> (Entry.date <$> me)) `mplus` (Just today)))
   <*> "howmuch" .: stringRead "Number, like 5.05" (Entry.howmuch <$> me)
-  <*> "whopays" .: ((map fst3 . filter trd3) <$>
-                    listOf
-                      (\mp -> checkboxForm (maybe Nothing (\p ->
-                                                             Just ( Person.id p
-                                                                  , Person.name p
-                                                                  , Person.id p `elem` (fromMaybe [] (Entry.whopaysIds <$> me)))) mp))
-                      (Just people))
+  <*> "whopays" .: peopleForm people (fromMaybe (map Person.id people) (Entry.whopaysIds <$> me))
 
 editH :: Ctxt -> Int -> IO (Maybe Response)
 editH ctxt i =
@@ -97,8 +102,9 @@ editH ctxt i =
                people <- State.Person.getForAccount ctxt aid
                case me of
                  Nothing -> redirect root
-                 Just entry ->
-                   runForm ctxt "edit" (entryForm people (Just entry)) $ \r ->
+                 Just entry -> do
+                   today <- utctDay <$> getCurrentTime
+                   runForm ctxt "edit" (entryForm today people (Just entry)) $ \r ->
                      case r of
                        (v, Nothing) -> renderWith' ctxt (formFills v) "entry/edit"
                        (_, Just entry') -> do State.Entry.update ctxt aid entry'
