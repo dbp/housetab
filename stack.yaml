@@ -11,7 +11,7 @@ packages:
       commit: 5898878bff740665986bb49c4bdc48c11646c3b1
   subdirs:
     - fn
-
+  extra-dep: true
 extra-deps:
 - logging-3.0.4
 - heroku-0.1.2.3
